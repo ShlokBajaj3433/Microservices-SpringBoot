@@ -1,13 +1,13 @@
-package com.order-service;
+package com.orderservice.order_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class order-serviceApplication {
+public class OrderServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(order-serviceApplication.class, args);
+		SpringApplication.run(OrderServiceApplication.class, args);
 	}
 
 }
