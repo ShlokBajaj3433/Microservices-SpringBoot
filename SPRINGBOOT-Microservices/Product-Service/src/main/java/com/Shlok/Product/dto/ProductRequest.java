@@ -13,8 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductRequest {
 
+    private String id;
     private String name;
     private String description;
+    private String skuCode;
     private BigDecimal price;
 
 }

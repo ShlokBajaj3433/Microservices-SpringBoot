@@ -4,8 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
-import java.util.List;
+import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import com.orderservice.order_service.dto.OrderLineItemsDto;
 import com.orderservice.order_service.dto.OrderRequest;
+import com.orderservice.order_service.dto.OrderRequest.UserDetails;
 import com.orderservice.order_service.model.Order;
 import com.orderservice.order_service.repository.OrderRepository;
 
@@ -24,56 +24,51 @@ import com.orderservice.order_service.repository.OrderRepository;
  * Tests the core business logic for order placement
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"rawtypes", "unchecked"})
 class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private WebClient webClient;
+
+    @Mock
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+
+    @Mock
+    private WebClient.RequestHeadersSpec requestHeadersSpec;
+
+    @Mock
+    private WebClient.ResponseSpec responseSpec;
+
     @InjectMocks
     private OrderService orderService;
 
     private OrderRequest orderRequest;
-    private List<OrderLineItemsDto> orderLineItemsList;
 
     @BeforeEach
     void setUp() {
         // Arrange - Setup test data
-        OrderLineItemsDto item1 = new OrderLineItemsDto();
-        item1.setSkuCode("IPHONE_13");
-        item1.setPrice(1000.0);
-        item1.setQuantity(2);
-
-        OrderLineItemsDto item2 = new OrderLineItemsDto();
-        item2.setSkuCode("MACBOOK_PRO");
-        item2.setPrice(2500.0);
-        item2.setQuantity(1);
-
-        orderLineItemsList = Arrays.asList(item1, item2);
-        orderRequest = new OrderRequest(orderLineItemsList);
+        UserDetails userDetails = new UserDetails("test@example.com", "John", "Doe");
+        orderRequest = new OrderRequest(
+            null,
+            null,
+            "IPHONE_13",
+            new BigDecimal("1000.00"),
+            2,
+            userDetails
+        );
     }
 
     @Test
-    void placeOrder_ShouldSaveOrder_WhenValidOrderRequest() {
+    void placeOrder_ShouldSaveOrder_WhenProductInStock() {
         // Arrange
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(true));
         when(orderRepository.save(any(Order.class))).thenReturn(new Order());
-
-        // Act
-        orderService.placeOrder(orderRequest);
-
-        // Assert
-        verify(orderRepository, times(1)).save(any(Order.class));
-    }
-
-    @Test
-    void placeOrder_ShouldCreateOrderWithCorrectNumberOfItems() {
-        // Arrange
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
-            Order savedOrder = invocation.getArgument(0);
-            // Assert - Verify order has correct number of items
-            assertEquals(2, savedOrder.getOrderItems().size(), 
-                "Order should contain exactly 2 order line items");
-            return savedOrder;
-        });
 
         // Act
         orderService.placeOrder(orderRequest);
@@ -85,6 +80,10 @@ class OrderServiceTest {
     @Test
     void placeOrder_ShouldGenerateOrderNumber() {
         // Arrange
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(true));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
             // Assert - Verify order number was generated
@@ -103,26 +102,22 @@ class OrderServiceTest {
     }
 
     @Test
-    void placeOrder_ShouldMapDtoFieldsCorrectly() {
+    void placeOrder_ShouldMapFieldsCorrectly() {
         // Arrange
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(true));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
             
-            // Assert - Verify first item mapping
-            assertEquals("IPHONE_13", savedOrder.getOrderItems().get(0).getSkuCode(), 
-                "First item SKU code should match");
-            assertEquals(1000.0, savedOrder.getOrderItems().get(0).getPrice(), 
-                "First item price should match");
-            assertEquals(2, savedOrder.getOrderItems().get(0).getQuantity(), 
-                "First item quantity should match");
-            
-            // Assert - Verify second item mapping
-            assertEquals("MACBOOK_PRO", savedOrder.getOrderItems().get(1).getSkuCode(), 
-                "Second item SKU code should match");
-            assertEquals(2500.0, savedOrder.getOrderItems().get(1).getPrice(), 
-                "Second item price should match");
-            assertEquals(1, savedOrder.getOrderItems().get(1).getQuantity(), 
-                "Second item quantity should match");
+            // Assert - Verify order fields
+            assertEquals("IPHONE_13", savedOrder.getSkuCode(), 
+                "SKU code should match");
+            assertEquals(new BigDecimal("2000.00"), savedOrder.getPrice(), 
+                "Price should be quantity * unit price");
+            assertEquals(2, savedOrder.getQuantity(), 
+                "Quantity should match");
             
             return savedOrder;
         });
@@ -135,39 +130,15 @@ class OrderServiceTest {
     }
 
     @Test
-    void placeOrder_WithEmptyList_ShouldSaveOrderWithNoItems() {
+    void placeOrder_ShouldThrowException_WhenProductNotInStock() {
         // Arrange
-        OrderRequest emptyRequest = new OrderRequest(List.of());
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
-            Order savedOrder = invocation.getArgument(0);
-            // Assert - Verify empty order items list
-            assertTrue(savedOrder.getOrderItems().isEmpty(), 
-                "Order items list should be empty");
-            return savedOrder;
-        });
+        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(false));
 
-        // Act
-        orderService.placeOrder(emptyRequest);
-
-        // Assert
-        verify(orderRepository, times(1)).save(any(Order.class));
-    }
-
-    @Test
-    void placeOrder_WithSingleItem_ShouldCreateOrderSuccessfully() {
-        // Arrange - Create order with single item
-        OrderLineItemsDto singleItem = new OrderLineItemsDto();
-        singleItem.setSkuCode("AIRPODS_PRO");
-        singleItem.setPrice(249.0);
-        singleItem.setQuantity(1);
-        
-        OrderRequest singleItemRequest = new OrderRequest(List.of(singleItem));
-        when(orderRepository.save(any(Order.class))).thenReturn(new Order());
-
-        // Act
-        orderService.placeOrder(singleItemRequest);
-
-        // Assert
-        verify(orderRepository, times(1)).save(any(Order.class));
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> orderService.placeOrder(orderRequest));
+        verify(orderRepository, never()).save(any(Order.class));
     }
 }

@@ -1,11 +1,11 @@
 package com.Shlok.Product.Service;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -14,15 +14,17 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.Shlok.Product.dto.ProductRequest;
 import com.Shlok.Product.repository.ProductRepo;
+
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Testcontainers
-@AutoConfigureMockMvc
+@AutoConfiguration
 class ProductServiceApplicationTests {
     @Container
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4.2");
@@ -31,7 +33,7 @@ class ProductServiceApplicationTests {
     private MockMvc mockMvc;
     
     @Autowired
-    private tools.jackson.databind.ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     
     @Autowired
     private ProductRepo productRepo;

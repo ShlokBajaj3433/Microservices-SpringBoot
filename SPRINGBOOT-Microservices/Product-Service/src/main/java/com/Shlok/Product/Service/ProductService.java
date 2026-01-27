@@ -19,15 +19,18 @@ public class ProductService {
 
     private final ProductRepo productRepo;
     
-    public void createProduct(ProductRequest productRequest) {
+    public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = Product.builder()
                 .name(productRequest.getName())
                 .description(productRequest.getDescription())
+                .skuCode(productRequest.getSkuCode())
                 .price(productRequest.getPrice())
                 .build();
                 
         productRepo.save(product);
         log.info("Product {} is saved", product.getId());
+        return new ProductResponse(product.getId(), product.getName(), product.getDescription(),
+                product.getSkuCode(), product.getPrice());
     }
 
     public List<ProductResponse> getAllProducts() {
@@ -43,6 +46,7 @@ public class ProductService {
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
+                .skuCode(product.getSkuCode())
                 .price(product.getPrice())
                 .build();
     }

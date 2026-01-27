@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@Document(collection = "products")
+@Document(value = "product")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -21,6 +21,7 @@ public class Product {
     private String id;
     private String name;
     private String description;
+    private String skuCode;
     private BigDecimal price;
     
 }

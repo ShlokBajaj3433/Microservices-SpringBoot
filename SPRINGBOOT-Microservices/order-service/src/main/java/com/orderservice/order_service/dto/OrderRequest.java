@@ -1,6 +1,9 @@
 package com.orderservice.order_service.dto;
 
-import java.util.List;
+import java.math.BigDecimal;
 
-public record OrderRequest(List<OrderLineItemsDto> orderLineItemsDtoList) {
+public record OrderRequest(Long id, String orderNumber, String skuCode,
+                           BigDecimal price, Integer quantity, UserDetails userDetails) {
+
+    public record UserDetails(String email, String firstName, String lastName) {}
 }

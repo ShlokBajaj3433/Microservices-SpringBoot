@@ -1,16 +1,15 @@
 package com.orderservice.order_service.services;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.orderservice.order_service.client.InventoryClient;
 import com.orderservice.order_service.dto.OrderRequest;
-import com.orderservice.order_service.dto.OrderLineItemsDto;
 import com.orderservice.order_service.model.Order;
-import com.orderservice.order_service.model.OrderLineItem;
 import com.orderservice.order_service.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,26 +20,25 @@ import lombok.RequiredArgsConstructor;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final WebClient webClient;
+    private final InventoryClient inventoryClient;
 
     public void placeOrder(OrderRequest orderRequest) {
-        Order order = new Order();
-        order.setOrderNumber(UUID.randomUUID().toString());
-
-        List<OrderLineItem> orderLineItems = orderRequest.orderLineItemsDtoList()
-                .stream()
-                .map(this::mapToEntity)
-                .collect(Collectors.toList());
-
-        order.setOrderItems(orderLineItems);
-
-        orderRepository.save(order);
+        
+        inventoryClient.isInStock(orderRequest.skuCode(), orderRequest.quantity());
+        boolean isProductInStock = inventoryClient.isInStock(orderRequest.skuCode(), orderRequest.quantity());
+        
+        if (isProductInStock) {
+            Order order = new Order();
+            order.setOrderNumber(UUID.randomUUID().toString());
+            order.setPrice(orderRequest.price().multiply(BigDecimal.valueOf(orderRequest.quantity())));
+            order.setSkuCode(orderRequest.skuCode());
+            order.setQuantity(orderRequest.quantity());
+            orderRepository.save(order);
+        } else {
+            throw new IllegalArgumentException("Product is not in stock, please try again later");
+        }
     }
 
-    private OrderLineItem mapToEntity(OrderLineItemsDto orderLineItemsDto) {
-        OrderLineItem orderLineItem = new OrderLineItem();
-        orderLineItem.setPrice(orderLineItemsDto.getPrice());
-        orderLineItem.setQuantity(orderLineItemsDto.getQuantity());
-        orderLineItem.setSkuCode(orderLineItemsDto.getSkuCode());
-        return orderLineItem;
-    }
+   
 }
