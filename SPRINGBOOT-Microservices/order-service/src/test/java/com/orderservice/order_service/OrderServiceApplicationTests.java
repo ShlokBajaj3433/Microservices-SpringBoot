@@ -1,33 +1,95 @@
 package com.orderservice.order_service;
 
+import com.orderservice.order_service.stubs.InventoryClientStub;
+import io.restassured.RestAssured;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-@SpringBootTest
-@Testcontainers
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderServiceApplicationTests {
 
-	@Container
-	static MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.3.0")
-			.withDatabaseName("order_service")
-			.withUsername("root")
-			.withPassword("example");
+	@RegisterExtension
+	static WireMockExtension wireMockServer = WireMockExtension.newInstance()
+			.options(wireMockConfig().dynamicPort())
+			.build();
+
+	@ServiceConnection
+	static MySQLContainer mySQLContainer = new MySQLContainer("mysql:8.3.0");
+	
+	@LocalServerPort
+	private Integer port;
 
 	@DynamicPropertySource
-	static void setProperties(DynamicPropertyRegistry registry) {
-		registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
-		registry.add("spring.datasource.username", mysqlContainer::getUsername);
-		registry.add("spring.datasource.password", mysqlContainer::getPassword);
+	static void configureProperties(DynamicPropertyRegistry registry) {
+		registry.add("inventory.service.url", 
+			() -> "http://localhost:" + wireMockServer.getPort());
+	}
+
+	@BeforeEach
+	void setup() {
+		RestAssured.baseURI = "http://localhost";
+		RestAssured.port = port;
+	}
+
+	static {
+		mySQLContainer.start();
 	}
 
 	@Test
-	void contextLoads() {
-		
+	void shouldSubmitOrder() {
+		String submitOrderJson = """
+                {
+                     "skuCode": "iphone_15",
+                     "price": 1000,
+                     "quantity": 1
+                }
+                """;
+		InventoryClientStub.stubInventoryCall(wireMockServer.getRuntimeInfo().getWireMock(), "iphone_15", 1);
+
+		var responseBodyString = RestAssured.given()
+				.contentType("application/json")
+				.body(submitOrderJson)
+				.when()
+				.post("/api/order")
+				.then()
+				.log().all()
+				.statusCode(201)
+				.extract()
+				.body().asString();
+
+		assertThat(responseBodyString, Matchers.is("Order placed successfully"));
 	}
 
+	@Test
+	void shouldFailOrderWhenProductIsNotInStock() {
+		String submitOrderJson = """
+                {
+                     "skuCode": "iphone_15",
+                     "price": 1000,
+                     "quantity": 1000
+                }
+                """;
+		InventoryClientStub.stubInventoryCall(wireMockServer.getRuntimeInfo().getWireMock(), "iphone_15", 1000);
+
+		RestAssured.given()
+				.contentType("application/json")
+				.body(submitOrderJson)
+				.when()
+				.post("/api/order")
+				.then()
+				.log().all()
+				.statusCode(500);
+	}
 }
