@@ -25,7 +25,6 @@ public class OrderService {
 
     public void placeOrder(OrderRequest orderRequest) {
         
-        inventoryClient.isInStock(orderRequest.skuCode(), orderRequest.quantity());
         boolean isProductInStock = inventoryClient.isInStock(orderRequest.skuCode(), orderRequest.quantity());
         
         if (isProductInStock) {

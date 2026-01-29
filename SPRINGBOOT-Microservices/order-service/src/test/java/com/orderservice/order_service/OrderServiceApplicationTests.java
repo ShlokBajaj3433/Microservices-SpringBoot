@@ -57,7 +57,7 @@ class OrderServiceApplicationTests {
                      "quantity": 1
                 }
                 """;
-		InventoryClientStub.stubInventoryCall("iphone_15", 1);
+		InventoryClientStub.stubInventoryCall(wireMockServer.getRuntimeInfo().getWireMock(), "iphone_15", 1);
 
 		var responseBodyString = RestAssured.given()
 				.contentType("application/json")
@@ -70,6 +70,8 @@ class OrderServiceApplicationTests {
 				.extract()
 				.body().asString();
 
+		System.out.println("✅ Order Submitted Successfully!");
+		System.out.println("Response: " + responseBodyString);
 		assertThat(responseBodyString, Matchers.is("Order placed successfully"));
 	}
 
@@ -82,15 +84,21 @@ class OrderServiceApplicationTests {
                      "quantity": 1000
                 }
                 """;
-		InventoryClientStub.stubInventoryCall("iphone_15", 1000);
+		InventoryClientStub.stubInventoryCall(wireMockServer.getRuntimeInfo().getWireMock(), "iphone_15", 1000);
 
-		RestAssured.given()
+		var response = RestAssured.given()
 				.contentType("application/json")
 				.body(submitOrderJson)
 				.when()
 				.post("/api/order")
 				.then()
 				.log().all()
-				.statusCode(500);
+				.statusCode(500)
+				.extract()
+				.response();
+
+		System.out.println("❌ Order Failed as Expected!");
+		System.out.println("Response Status: " + response.getStatusCode());
+		System.out.println("Response Body: " + response.getBody().asString());
 	}
 }

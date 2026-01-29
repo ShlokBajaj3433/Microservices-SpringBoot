@@ -12,8 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClient;
 
+import com.orderservice.order_service.client.InventoryClient;
 import com.orderservice.order_service.dto.OrderRequest;
 import com.orderservice.order_service.dto.OrderRequest.UserDetails;
 import com.orderservice.order_service.model.Order;
@@ -24,23 +24,13 @@ import com.orderservice.order_service.repository.OrderRepository;
  * Tests the core business logic for order placement
  */
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"rawtypes", "unchecked"})
 class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
 
     @Mock
-    private WebClient webClient;
-
-    @Mock
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
-
-    @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
-
-    @Mock
-    private WebClient.ResponseSpec responseSpec;
+    private InventoryClient inventoryClient;
 
     @InjectMocks
     private OrderService orderService;
@@ -64,26 +54,21 @@ class OrderServiceTest {
     @Test
     void placeOrder_ShouldSaveOrder_WhenProductInStock() {
         // Arrange
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(true));
+        when(inventoryClient.isInStock("IPHONE_13", 2)).thenReturn(true);
         when(orderRepository.save(any(Order.class))).thenReturn(new Order());
 
         // Act
         orderService.placeOrder(orderRequest);
 
         // Assert
+        verify(inventoryClient, times(1)).isInStock("IPHONE_13", 2);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
     @Test
     void placeOrder_ShouldGenerateOrderNumber() {
         // Arrange
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(true));
+        when(inventoryClient.isInStock("IPHONE_13", 2)).thenReturn(true);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
             // Assert - Verify order number was generated
@@ -104,10 +89,7 @@ class OrderServiceTest {
     @Test
     void placeOrder_ShouldMapFieldsCorrectly() {
         // Arrange
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(true));
+        when(inventoryClient.isInStock("IPHONE_13", 2)).thenReturn(true);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
             
@@ -132,10 +114,7 @@ class OrderServiceTest {
     @Test
     void placeOrder_ShouldThrowException_WhenProductNotInStock() {
         // Arrange
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(java.util.function.Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Boolean.class)).thenReturn(reactor.core.publisher.Mono.just(false));
+        when(inventoryClient.isInStock("IPHONE_13", 2)).thenReturn(false);
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> orderService.placeOrder(orderRequest));
