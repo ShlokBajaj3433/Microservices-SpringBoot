@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.orderservice.order_service.client.InventoryClient;
 import com.orderservice.order_service.dto.OrderRequest;
@@ -20,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final WebClient webClient;
     private final InventoryClient inventoryClient;
 
     public void placeOrder(OrderRequest orderRequest) {

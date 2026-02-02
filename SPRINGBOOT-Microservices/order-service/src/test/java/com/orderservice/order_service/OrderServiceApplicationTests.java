@@ -13,6 +13,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.utility.DockerImageName;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,7 +27,7 @@ class OrderServiceApplicationTests {
 			.build();
 
 	@ServiceConnection
-	static MySQLContainer mySQLContainer = new MySQLContainer("mysql:8.3.0");
+	static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.3.0"));
 	
 	@LocalServerPort
 	private Integer port;

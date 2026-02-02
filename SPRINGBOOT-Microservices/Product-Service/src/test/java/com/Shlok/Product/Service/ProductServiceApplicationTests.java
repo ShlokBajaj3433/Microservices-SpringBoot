@@ -14,10 +14,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.Shlok.Product.dto.ProductRequest;
-import com.Shlok.Product.repository.ProductRepo;
 
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,16 +27,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfiguration
 class ProductServiceApplicationTests {
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4.2");
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4.2"));
     
     @Autowired
     private MockMvc mockMvc;
     
     @Autowired
     private ObjectMapper objectMapper;
-    
-    @Autowired
-    private ProductRepo productRepo;
     
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
