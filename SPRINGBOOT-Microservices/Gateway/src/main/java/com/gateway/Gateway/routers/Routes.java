@@ -2,6 +2,7 @@ package com.gateway.Gateway.routers;
 
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,8 @@ import org.springframework.web.servlet.function.ServerResponse;
 import static org.springframework.cloud.gateway.server.mvc.filter.FilterFunctions.setPath;
 import static org.springframework.cloud.gateway.server.mvc.filter.FilterFunctions.uri;
 import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
+
+import java.net.URI;
 
 @Configuration
 public class Routes {
@@ -36,6 +39,8 @@ public class Routes {
                         HandlerFunctions.http()
                 )
                 .filter(uri(productServiceUrl))
+                .filter(CircuitBreakerFilterFunctions.circuitBreaker("productServiceCircuitBreaker",
+                        URI.create("forward:/fallbackRoute")))
                 .build();
     }
 
@@ -61,6 +66,8 @@ public class Routes {
                         HandlerFunctions.http()
                 )
                 .filter(uri(orderServiceUrl))
+                .filter(CircuitBreakerFilterFunctions.circuitBreaker("orderServiceCircuitBreaker",
+                        URI.create("forward:/fallbackRoute")))
                 .build();
     }
 
@@ -86,6 +93,8 @@ public class Routes {
                         HandlerFunctions.http()
                 )
                 .filter(uri(inventoryServiceUrl))
+                .filter(CircuitBreakerFilterFunctions.circuitBreaker("inventoryServiceCircuitBreaker",
+                        URI.create("forward:/fallbackRoute")))
                 .build();
     }
 
@@ -98,6 +107,7 @@ public class Routes {
                 )
                 .filter(uri(inventoryServiceUrl))
                 .filter(setPath("/api-docs"))
+                
                 .build();
     }
 
