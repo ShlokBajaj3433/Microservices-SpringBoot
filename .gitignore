@@ -2,3 +2,4 @@ SPRINGBOOT-Microservices/Postman-Collection.json
 .vscode/launch.json
 .vscode/settings.json
 SPRINGBOOT-Microservices/Gateway/volume-data/**
+SPRINGBOOT-Microservices/order-service/mysql/**
