@@ -1,25 +1,27 @@
 package com.shlok.microservices.notification_service.service;
 
-import org.apache.kafka.common.utils.Java;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
 import com.shlok.microservices.notification_service.order.OrderPlacedEvent;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class NotificationService {
-    
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
+
     private final JavaMailSender javaMailSender;
+
+    public NotificationService(JavaMailSender javaMailSender) {
+        this.javaMailSender = javaMailSender;
+    }
 
     @KafkaListener(topics = "order-placed")
     public void listner(OrderPlacedEvent orderPlacedEvent){
@@ -31,14 +33,14 @@ public class NotificationService {
             messageHelper.setTo(orderPlacedEvent.getEmail().toString());
             messageHelper.setSubject(String.format("Your Order with OrderNumber %s is placed successfully", orderPlacedEvent.getOrderNumber()));
             messageHelper.setText(String.format("""
-                            Hi %s,%s
+                            Hi %s,
 
                             Your order with order number %s is now placed successfully.
                             
                             Best Regards
                             Spring Shop
                             """,
-                    
+                    orderPlacedEvent.getEmail(),
                     orderPlacedEvent.getOrderNumber()));
         };
         try {
