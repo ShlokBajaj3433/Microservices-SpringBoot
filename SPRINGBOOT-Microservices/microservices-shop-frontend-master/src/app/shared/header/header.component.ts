@@ -32,7 +32,20 @@ export class HeaderComponent implements OnInit {
   }
 
   login(): void {
-    this.oidcSecurityService.authorize();
+    console.log('Login clicked');
+    this.oidcSecurityService.preloadAuthWellKnownDocument().subscribe({
+      next: () => {
+        try {
+          this.oidcSecurityService.authorize();
+          console.log('Authorize method called successfully');
+        } catch (error) {
+          console.error('Error calling authorize:', error);
+        }
+      },
+      error: (err) => {
+        console.error('OIDC metadata preload failed:', err);
+      }
+    });
   }
 
   logout(): void {

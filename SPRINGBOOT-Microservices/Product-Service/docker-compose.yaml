@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: mongo:4.4.2
+    image: mongo:4.4
     container_name: mongodb
     ports:
       - "27017:27017"
@@ -9,7 +9,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
       MONGO_INITDB_DATABASE: productsdb
     volumes:
-      - mongodb-data:/data/db
+      - mongodb-data-v2:/data/db
 
 volumes:
-  mongodb-data:
+  mongodb-data-v2:

@@ -66,12 +66,28 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles",
+        "web-origins",
+        "microservices"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ],
       "redirectUris": [
-        "http://localhost:4200/*",
-        "http://localhost:4200"
+        "http://localhost:4200",
+        "http://localhost:4200/",
+        "http://localhost:4200/*"
       ],
       "webOrigins": [
-        "http://localhost:4200"
+        "http://localhost:4200",
+        "+"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256"
@@ -91,7 +107,7 @@
         "http://localhost:9000/*",
         "http://localhost:9000/swagger-ui/oauth2-redirect.html",
         "http://localhost:9000/webjars/swagger-ui/oauth2-redirect.html",
-        "http://localhost:8080/*",
+        "http://localhost:8083/*",
         "http://localhost:8081/*",
         "http://localhost:8082/*",
         "https://oauth.pstmn.io/v1/callback"

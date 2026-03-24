@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.3.0
+    image: mysql:8.3
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: Shlok@sql
@@ -50,7 +50,7 @@ services:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     ports:
-      - "8086:8080"
+      - "8086:8083"
     depends_on:
       - broker
       # - schema-registry
