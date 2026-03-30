@@ -45,7 +45,7 @@ class OrderServiceTest {
             null,
             null,
             "IPHONE_13",
-            new BigDecimal("1000.00"),
+            1000.00,
             2,
             userDetails
         );

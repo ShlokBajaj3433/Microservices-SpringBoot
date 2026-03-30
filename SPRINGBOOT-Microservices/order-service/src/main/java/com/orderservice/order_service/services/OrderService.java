@@ -1,6 +1,8 @@
 package com.orderservice.order_service.services;
 
 import java.math.BigDecimal;
+import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.kafka.core.KafkaTemplate;
@@ -25,7 +27,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final InventoryClient inventoryClient;
-    private final KafkaTemplate<String, OrderPlacedMessage> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void placeOrder(OrderRequest orderRequest) {
         
@@ -34,7 +36,8 @@ public class OrderService {
         if (isProductInStock) {
             Order order = new Order();
             order.setOrderNumber(UUID.randomUUID().toString());
-            order.setPrice(orderRequest.price().multiply(BigDecimal.valueOf(orderRequest.quantity())));
+            BigDecimal unitPrice = BigDecimal.valueOf(orderRequest.price());
+            order.setPrice(unitPrice.multiply(BigDecimal.valueOf(orderRequest.quantity())));
             order.setSkuCode(orderRequest.skuCode());
             order.setQuantity(orderRequest.quantity());
             orderRepository.save(order);
@@ -47,9 +50,17 @@ public class OrderService {
                     .firstName(orderRequest.userDetails().firstName())
                     .lastName(orderRequest.userDetails().lastName())
                     .build();
-                log.info("Start - Sending OrderPlacedMessage {} to Kafka topic order-placed", orderPlacedMessage);
-                kafkaTemplate.send("order-placed", orderPlacedMessage);
-                log.info("End - Sending OrderPlacedMessage {} to Kafka topic order-placed", orderPlacedMessage);
+                CompletableFuture.runAsync(() -> {
+                    log.info("Start - Sending OrderPlacedMessage {} to Kafka topic order-placed", orderPlacedMessage);
+                    try {
+                        kafkaTemplate.send("order-placed", orderPlacedMessage);
+                        log.info("End - Sending OrderPlacedMessage {} to Kafka topic order-placed", orderPlacedMessage);
+                    } catch (RuntimeException ex) {
+                        // Do not fail order creation when event publishing infrastructure is temporarily unavailable.
+                        log.warn("Kafka publish failed for order {}, order is still persisted. Cause: {}",
+                                order.getOrderNumber(), ex.getMessage());
+                    }
+                });
 
         }
         else {
@@ -57,5 +68,13 @@ public class OrderService {
         }
     }
 
-   
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Order getOrderByNumber(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+            .orElseThrow(() -> new IllegalArgumentException("Order not found with number: " + orderNumber));
+    }
+
 }

@@ -8,17 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.MySQLContainer;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class InventoryServiceApplicationTests {
-
-	@ServiceConnection
-	static MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.3.0");
 
 	@LocalServerPort
 	private Integer port;
@@ -32,21 +27,17 @@ class InventoryServiceApplicationTests {
 		RestAssured.port = port;
 	}
 
-	static {
-		mySQLContainer.start();
-	}
-
 	@Test
 	void shouldCheckInventoryInStock() {
 		// Create test inventory
 		var inventory = new Inventory();
-		inventory.setSkuCode("iphone_15");
+		inventory.setSkuCode("iphone_15_test");
 		inventory.setQuantity(100);
 		inventoryRepository.save(inventory);
 
 		// Test with sufficient quantity
 		var isInStock = RestAssured.given()
-				.param("skuCode", "iphone_15")
+				.param("skuCode", "iphone_15_test")
 				.param("quantity", 10)
 				.when()
 				.get("/api/inventory")
@@ -62,13 +53,13 @@ class InventoryServiceApplicationTests {
 	void shouldCheckInventoryOutOfStock() {
 		// Create test inventory with limited quantity
 		var inventory = new Inventory();
-		inventory.setSkuCode("pixel_8");
+		inventory.setSkuCode("pixel_8_test");
 		inventory.setQuantity(5);
 		inventoryRepository.save(inventory);
 
 		// Test with insufficient quantity
 		var isInStock = RestAssured.given()
-				.param("skuCode", "pixel_8")
+				.param("skuCode", "pixel_8_test")
 				.param("quantity", 10)
 				.when()
 				.get("/api/inventory")
