@@ -3,3 +3,5 @@ SPRINGBOOT-Microservices/Postman-Collection.json
 .vscode/settings.json
 SPRINGBOOT-Microservices/Gateway/volume-data/**
 SPRINGBOOT-Microservices/order-service/mysql/**
+SPRINGBOOT-Microservices/Gateway/docker/tempo/tempo-data/**
+SPRINGBOOT-Microservices/output.json
