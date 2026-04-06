@@ -15,11 +15,6 @@
     private readonly oidcSecurityService = inject(OidcSecurityService);
 
     ngOnInit(): void {
-      this.oidcSecurityService.isAuthenticated$.subscribe(({isAuthenticated}) => {
-        console.log('app authenticated', isAuthenticated);
-      });
-
-      // Debug: Log the configuration
-      console.log('OIDC Authority:', 'http://localhost:8181/realms/spring-microservices-security-realm');
+      this.oidcSecurityService.isAuthenticated$.subscribe();
     }
   }

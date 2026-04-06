@@ -1,4 +1,4 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {OidcSecurityService} from "angular-auth-oidc-client";
 import {Product} from "../../model/product";
 import {ProductService} from "../../services/product/product.service";
@@ -6,6 +6,8 @@ import {Router} from "@angular/router";
 import {Order} from "../../model/order";
 import {FormsModule} from "@angular/forms";
 import {OrderService} from "../../services/order/order.service";
+import {take} from "rxjs";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
     selector: 'app-homepage',
@@ -16,6 +18,7 @@ import {OrderService} from "../../services/order/order.service";
     styleUrl: './home-page.component.css'
 })
 export class HomePageComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly oidcSecurityService = inject(OidcSecurityService);
   private readonly productService = inject(ProductService);
   private readonly orderService = inject(OrderService);
@@ -27,17 +30,20 @@ export class HomePageComponent implements OnInit {
   orderFailed = false;
 
   ngOnInit(): void {
-    this.oidcSecurityService.isAuthenticated$.subscribe(
+    this.oidcSecurityService.isAuthenticated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
       ({isAuthenticated}) => {
         this.isAuthenticated = isAuthenticated;
         if (isAuthenticated) {
           this.productService.getProducts()
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(product => {
               this.products = product;
             });
         }
       }
-    )
+    );
   }
 
   goToCreateProductPage() {
@@ -45,36 +51,40 @@ export class HomePageComponent implements OnInit {
   }
 
   orderProduct(product: Product, quantity: string) {
+    const parsedQuantity = Number(quantity);
 
-    this.oidcSecurityService.userData$.subscribe(result => {
+    if (!quantity || Number.isNaN(parsedQuantity) || parsedQuantity <= 0) {
+      this.orderFailed = true;
+      this.orderSuccess = false;
+      this.quantityIsNull = true;
+      return;
+    }
+
+    this.oidcSecurityService.userData$
+      .pipe(take(1))
+      .subscribe(result => {
       const userDetails = {
         email: result.userData.email,
         firstName: result.userData.given_name,
         lastName: result.userData.family_name
       };
 
-      if(!quantity) {
-        this.orderFailed = true;
-        this.orderSuccess = false;
-        this.quantityIsNull = true;
-      } else {
         const order: Order = {
           skuCode: product.skuCode,
           price: product.price,
-          quantity: Number(quantity),
+          quantity: parsedQuantity,
           userDetails: userDetails
         }
 
-        this.orderService.orderProduct(order).subscribe(() => {
+        this.orderService.orderProduct(order).pipe(take(1)).subscribe(() => {
           this.orderSuccess = true;
           this.orderFailed = false;
           this.quantityIsNull = false;
-        }, error => {
+        }, () => {
           this.orderFailed = true;
           this.orderSuccess = false;
           this.quantityIsNull = false;
-        })
-      }
-    })
+        });
+    });
   }
 }

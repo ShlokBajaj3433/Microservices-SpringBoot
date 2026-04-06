@@ -1,5 +1,6 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {OidcSecurityService} from "angular-auth-oidc-client";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
     selector: 'app-header',
@@ -9,6 +10,7 @@ import {OidcSecurityService} from "angular-auth-oidc-client";
 })
 export class HeaderComponent implements OnInit {
 
+  private readonly destroyRef = inject(DestroyRef);
   private readonly oidcSecurityService = inject(OidcSecurityService);
   isAuthenticated = false;
   username = "";
@@ -19,12 +21,16 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.oidcSecurityService.isAuthenticated$.subscribe(
+    this.oidcSecurityService.isAuthenticated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
       ({isAuthenticated}) => {
         this.isAuthenticated = isAuthenticated;
       }
     );
-    this.oidcSecurityService.userData$.subscribe(
+    this.oidcSecurityService.userData$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
       ({userData}) => {
         this.username = userData?.preferred_username ?? '';
       }
@@ -32,18 +38,12 @@ export class HeaderComponent implements OnInit {
   }
 
   login(): void {
-    console.log('Login clicked');
     this.oidcSecurityService.preloadAuthWellKnownDocument().subscribe({
       next: () => {
-        try {
-          this.oidcSecurityService.authorize();
-          console.log('Authorize method called successfully');
-        } catch (error) {
-          console.error('Error calling authorize:', error);
-        }
+        this.oidcSecurityService.authorize();
       },
-      error: (err) => {
-        console.error('OIDC metadata preload failed:', err);
+      error: () => {
+        this.isAuthenticated = false;
       }
     });
   }
@@ -51,6 +51,6 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.oidcSecurityService
       .logoff()
-      .subscribe((result) => console.log(result));
+      .subscribe();
   }
 }
