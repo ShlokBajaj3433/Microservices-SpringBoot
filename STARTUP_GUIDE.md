@@ -5,7 +5,7 @@ Before starting, ensure you have:
 - Docker and Docker Compose installed
 - Java 25 or Java 21 installed
 - Maven installed
-- Ports 3307, 27017, 9092, 8181, 8080-8084, 9000 are available
+- Ports 3307, 27018, 9092, 8181, 8080-8084, 9000 are available
 
 ## Step 1: Start Infrastructure Dependencies
 
@@ -47,8 +47,8 @@ mysql -h localhost -P 3307 -u root -pShlok@sql -e "SHOW DATABASES;"
 
 ### Check MongoDB
 ```bash
-# Test MongoDB on port 27017
-mongosh --host localhost:27017 -u root -p example --authenticationDatabase admin --eval "db.adminCommand('ping')"
+# Test MongoDB on port 27018
+mongosh --host localhost:27018 -u root -p example --authenticationDatabase admin --eval "db.adminCommand('ping')"
 ```
 
 ### Check Kafka
@@ -249,7 +249,7 @@ curl http://localhost:8084/actuator/health  # Notification Service
 | Product Service | 8083 | REST API |
 | Notification Service | 8084 | REST API |
 | MySQL (Order/Inventory) | 3307 | Database |
-| MongoDB (Product) | 27017 | Database |
+| MongoDB (Product) | 27018 | Database |
 | Kafka | 9092 | Message Broker |
 | Keycloak | 8181 | Auth Server |
 | Grafana | 3000 | Monitoring Dashboard |

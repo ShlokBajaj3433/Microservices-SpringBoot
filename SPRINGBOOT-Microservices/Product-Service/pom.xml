@@ -175,6 +175,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>4.0.2</version>
+                <configuration>
+                    <image>
+                        <name>product-service</name>
+                        <builder>paketobuildpacks/builder-noble-java-tiny:latest</builder>
+                    </image>
+                </configuration>
             </plugin>
 
         </plugins>

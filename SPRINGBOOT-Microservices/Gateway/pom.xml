@@ -130,6 +130,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<image>
+						<name>springbootmicroservices/gateway</name>
+					</image>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

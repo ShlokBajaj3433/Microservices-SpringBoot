@@ -1,6 +1,7 @@
 package com.orderservice.order_service.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.UUID;
@@ -37,18 +38,20 @@ public class OrderService {
             Order order = new Order();
             order.setOrderNumber(UUID.randomUUID().toString());
             BigDecimal unitPrice = BigDecimal.valueOf(orderRequest.price());
-            order.setPrice(unitPrice.multiply(BigDecimal.valueOf(orderRequest.quantity())));
+                order.setPrice(unitPrice.multiply(BigDecimal.valueOf(orderRequest.quantity()))
+                    .setScale(2, RoundingMode.HALF_UP));
             order.setSkuCode(orderRequest.skuCode());
             order.setQuantity(orderRequest.quantity());
             orderRepository.save(order);
          
             // Kafka producer code can be added here to send order details to a topic for further processing 
-            
+            OrderRequest.UserDetails userDetails = orderRequest.userDetails();
+            if (userDetails != null) {
                 OrderPlacedMessage orderPlacedMessage = OrderPlacedMessage.builder()
                     .orderNumber(order.getOrderNumber())
-                    .email(orderRequest.userDetails().email())
-                    .firstName(orderRequest.userDetails().firstName())
-                    .lastName(orderRequest.userDetails().lastName())
+                    .email(userDetails.email())
+                    .firstName(userDetails.firstName())
+                    .lastName(userDetails.lastName())
                     .build();
                 CompletableFuture.runAsync(() -> {
                     log.info("Start - Sending OrderPlacedMessage {} to Kafka topic order-placed", orderPlacedMessage);
@@ -61,6 +64,9 @@ public class OrderService {
                                 order.getOrderNumber(), ex.getMessage());
                     }
                 });
+            } else {
+                log.warn("User details are missing for order {}, skipping order-placed event publish", order.getOrderNumber());
+            }
 
         }
         else {
