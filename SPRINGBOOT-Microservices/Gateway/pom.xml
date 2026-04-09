@@ -132,8 +132,15 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<image>
-						<name>springbootmicroservices/gateway</name>
+						<name>docker.io/shlokbajaj3433/gateway</name>
+						<publish>true</publish>
 					</image>
+					<docker>
+						<publishRegistry>
+							<username>shlokbajaj3433</username>
+							<password>${env.DOCKER_PASSWORD}</password>
+						</publishRegistry>
+					</docker>
 				</configuration>
 			</plugin>
 		</plugins>

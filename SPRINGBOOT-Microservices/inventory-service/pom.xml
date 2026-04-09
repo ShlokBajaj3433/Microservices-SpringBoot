@@ -167,9 +167,16 @@
 				<version>4.0.2</version>
 				<configuration>
                     <image>
-                        <name>inventory-service</name>
+                        <name>docker.io/shlokbajaj3433/inventory-service</name>
+                        <publish>true</publish>
                         <builder>paketobuildpacks/builder-noble-java-tiny:latest</builder>
                     </image>
+					<docker>
+						<publishRegistry>
+							<username>shlokbajaj3433</username>
+							<password>${env.DOCKER_PASSWORD}</password>
+						</publishRegistry>
+					</docker>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

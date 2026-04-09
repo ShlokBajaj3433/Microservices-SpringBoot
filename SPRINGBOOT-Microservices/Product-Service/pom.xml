@@ -178,9 +178,16 @@
                 <version>4.0.2</version>
                 <configuration>
                     <image>
-                        <name>product-service</name>
+                        <name>docker.io/shlokbajaj3433/product-service</name>
+                        <publish>true</publish>
                         <builder>paketobuildpacks/builder-noble-java-tiny:latest</builder>
                     </image>
+                    <docker>
+                        <publishRegistry>
+                            <username>shlokbajaj3433</username>
+                            <password>${env.DOCKER_PASSWORD}</password>
+                        </publishRegistry>
+                    </docker>
                 </configuration>
             </plugin>
 
