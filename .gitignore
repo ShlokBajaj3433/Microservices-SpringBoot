@@ -5,3 +5,35 @@ SPRINGBOOT-Microservices/Gateway/volume-data/**
 SPRINGBOOT-Microservices/order-service/mysql/**
 SPRINGBOOT-Microservices/Gateway/docker/tempo/tempo-data/**
 SPRINGBOOT-Microservices/output.json
+
+# IDE/editor
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+**/target/
+**/build/
+**/dist/
+**/out/
+**/node_modules/
+
+# Runtime/logs/temp
+*.log
+*.tmp
+*.swp
+
+# Secrets/env files
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.p12
+*.jks
+secrets/
+

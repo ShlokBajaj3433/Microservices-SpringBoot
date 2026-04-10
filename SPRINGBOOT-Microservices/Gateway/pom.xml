@@ -80,6 +80,12 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.github.loki4j</groupId>
+			<artifactId>loki-logback-appender</artifactId>
+			<version>1.5.1</version>
+		</dependency>
+
 
 		<!-- SpringDoc OpenAPI for Swagger UI -->
 		<dependency>
@@ -138,7 +144,7 @@
 					<docker>
 						<publishRegistry>
 							<username>shlokbajaj3433</username>
-							<password>${env.DOCKER_PASSWORD}</password>
+							<password>${docker.password}</password>
 						</publishRegistry>
 					</docker>
 				</configuration>

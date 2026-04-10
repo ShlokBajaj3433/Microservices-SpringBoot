@@ -201,7 +201,7 @@
 					<docker>
 						<publishRegistry>
 							<username>shlokbajaj3433</username>
-							<password>${env.DOCKER_PASSWORD}</password>
+							<password>${docker.password}</password>
 						</publishRegistry>
 					</docker>
 					<excludes>

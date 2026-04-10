@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-mysql
+  labels:
+    app: kafka-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-mysql
+  template:
+    metadata:
+      labels:
+        app: kafka-mysql
+    spec:
+      containers:
+      - name: kafka-mysql
+        image: mysql:8.3.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
+        - name: MYSQL_DATABASE
+          value: keycloak
+        - name: MYSQL_USER
+          value: keycloak
+        - name: MYSQL_PASSWORD
+          value: password
+        volumeMounts:
+        - name: kafka-mysql-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: kafka-mysql-data
+        persistentVolumeClaim:
+          claimName: kafka-mysql-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-mysql-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-mysql
+  labels:
+    app: kafka-mysql
+spec:
+  selector:
+    app: kafka-mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+    protocol: TCP
+

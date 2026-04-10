@@ -149,6 +149,12 @@
             <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+
     </dependencies>
 
     <!-- Build section -->
@@ -185,7 +191,7 @@
                     <docker>
                         <publishRegistry>
                             <username>shlokbajaj3433</username>
-                            <password>${env.DOCKER_PASSWORD}</password>
+                            <password>${docker.password}</password>
                         </publishRegistry>
                     </docker>
                 </configuration>
