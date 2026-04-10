@@ -37,3 +37,8 @@ Thumbs.db
 *.jks
 secrets/
 
+# Generated local notes/guides
+BUILD_GUIDE.md
+DOCKER_CREDENTIALS_FIX.md
+BUILD_FIX_COMPLETE.md
+
