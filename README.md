@@ -13,6 +13,7 @@ This repository contains the latest source code for a complete Spring Boot Micro
 - [Quick Start (Local)](#quick-start-local)
 - [Build and Container Image](#build-and-container-image)
 - [Kubernetes Deployment](#kubernetes-deployment)
+- [AWS Deployment](#aws-deployment)
 - [Service Endpoints](#service-endpoints)
 - [API Collection](#api-collection)
 - [Troubleshooting](#troubleshooting)
@@ -208,3 +209,11 @@ Postman collection:
 - If a service fails to start, verify MySQL, MongoDB, Kafka, and Keycloak are healthy.
 - On Windows, use PowerShell or Git Bash.
 - For expanded startup and diagnostics, check `STARTUP_GUIDE.md`.
+
+## AWS Deployment
+
+For an AWS-oriented deployment path, see:
+
+- [Documentations/DevOps/07-aws-deployment.md](Documentations/DevOps/07-aws-deployment.md)
+
+That guide maps the current microservices stack to EKS, ECR, ALB, RDS, S3, CloudFront, and related AWS services while preserving the existing application boundaries.

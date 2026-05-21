@@ -10,6 +10,7 @@ This section documents the DevOps setup implemented in this project.
 4. [Kafka and Schema Registry](./04-kafka-schema-registry.md)
 5. [Keycloak and Auth Infrastructure](./05-keycloak-auth.md)
 6. [Troubleshooting Runbook](./06-troubleshooting.md)
+7. [AWS Deployment Guide](./07-aws-deployment.md)
 
 ## Platform Snapshot
 
@@ -17,6 +18,7 @@ This section documents the DevOps setup implemented in this project.
 - Container build: Spring Boot build-image via Maven Wrapper
 - Local orchestration: Docker Compose
 - Cluster orchestration: kind + Kubernetes manifests
+- AWS target: EKS + ECR + ALB + S3/CloudFront
 - Messaging: Kafka + Zookeeper + Schema Registry + Kafka UI
 - Security: Keycloak + OAuth2 resource server in Gateway
 - Observability: Prometheus + Grafana + Loki + Tempo
